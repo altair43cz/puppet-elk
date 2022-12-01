@@ -30,3 +30,16 @@ file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
             }
           }
         }' }
+
+file_line { 'disable elasticsearch output':
+         path   => '/etc/filebeat/filebeat.yml',
+         ensure => 'present',
+         match => 'output.elasticsearch:',
+         line => '# output.elasticsearch:'
+}
+file_line { 'disable elasticsearch out-port':
+         path   => '/etc/filebeat/filebeat.yml',
+         ensure => 'present',
+         match => 'hosts: \["localhost:9200"\]',
+         line => '# hosts: ["localhost:9200"]'
+}
