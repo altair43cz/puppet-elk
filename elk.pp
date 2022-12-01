@@ -4,3 +4,5 @@ package { 'default-jdk': ensure => 'installed' }
 include nginx
 package { 'elasticsearch': ensure => 'installed' }
 service { 'elasticsearch': ensure => 'running' }
+package { 'kibana': ensure => 'installed' }
+service { 'kibana': ensure => 'running' }
