@@ -5,3 +5,5 @@ package { 'elasticsearch': ensure => 'installed' }
 service { 'elasticsearch': ensure => 'running' }
 package { 'kibana': ensure => 'installed' }
 service { 'kibana': ensure => 'running' }
+package { 'logstash': ensure => 'installed' }
+service { 'logstash': ensure => 'running' }
