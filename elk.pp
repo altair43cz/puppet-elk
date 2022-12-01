@@ -43,3 +43,16 @@ file_line { 'disable elasticsearch out-port':
          match => 'hosts: \["localhost:9200"\]',
          line => '# hosts: ["localhost:9200"]'
 }
+
+file_line { 'enable logstash output':
+         path   => '/etc/filebeat/filebeat.yml',
+         ensure => 'present',
+         match => '#output.logstash:',
+         line => 'output.logstash:'
+}
+file_line { 'enable logstash out-port':
+         path   => '/etc/filebeat/filebeat.yml',
+         ensure => 'present',
+         match => '#hosts: \["localhost:5044"\]',
+         line => '  hosts: ["localhost:5044"]'
+}
