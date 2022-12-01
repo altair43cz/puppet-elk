@@ -7,3 +7,5 @@ package { 'kibana': ensure => 'installed' }
 service { 'kibana': ensure => 'running' }
 package { 'logstash': ensure => 'installed' }
 service { 'logstash': ensure => 'running' }
+file { '/etc/logstash/conf.d/02-beats-input.conf': 
+         content => 'input { beats { port => 5044 } }' }
