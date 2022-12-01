@@ -2,3 +2,4 @@
 include elastic_stack::repo
 package { 'default-jdk': ensure => 'installed' }
 include nginx
+package { 'elasticsearch': ensure => 'installed' }
