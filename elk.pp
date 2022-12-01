@@ -56,3 +56,9 @@ file_line { 'enable logstash out-port':
          match => '#hosts: \["localhost:5044"\]',
          line => '  hosts: ["localhost:5044"]'
 }
+
+file_line { 'append ilm policy':
+         path   => '/etc/filebeat/filebeat.yml',
+         ensure => 'present',
+         line => 'setup.ilm.overwrite: true'
+}
