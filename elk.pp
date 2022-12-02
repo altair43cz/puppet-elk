@@ -31,6 +31,13 @@ file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
           }
         }' }
 
+file_line { 'enable logs input':
+         path   => '/etc/filebeat/filebeat.yml',
+         ensure => 'present',
+         match => '^  enabled: false',
+         line => '  enabled: true'
+}
+
 file_line { 'disable elasticsearch output':
          path   => '/etc/filebeat/filebeat.yml',
          ensure => 'present',
