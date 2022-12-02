@@ -7,26 +7,11 @@ package { 'kibana': ensure => 'installed' }
 service { 'kibana': ensure => 'running' }
 package { 'logstash': ensure => 'installed' }
 service { 'logstash': ensure => 'running' }
-package { 'filebeat': ensure => 'installed' }
-service { 'filebeat': ensure => 'running' }
 
-file { '/etc/logstash/conf.d/02-beats-input.conf': 
-         content => 'input { beats { port => 5044 } }' }
-
-file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
-         content => 'output {
-          if [@metadata][pipeline] {
-            elasticsearch {
-            hosts => ["localhost:9200"]
-            manage_template => false
-            index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
-            pipeline => "%{[@metadata][pipeline]}"
-            }
-          } else {
-            elasticsearch {
-            hosts => ["localhost:9200"]
-            manage_template => false
-            index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
-            }
-          }
-        }' }
+file { '/etc/logstash/conf.d/10-syslog-elasticsearch.conf':
+         content => '#
+         input { file { path => "/var/log/apache/access.log" } }
+         filter { grok { match => { "message" => "%{COMBINEDAPACHELOG}" } }
+             date { match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ] }
+             geoip { source => "clientip" } }
+         output { elasticsearch { hosts => ["localhost:9200"] } }' }
