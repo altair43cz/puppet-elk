@@ -8,7 +8,7 @@ service { 'kibana': ensure => 'running' }
 package { 'logstash': ensure => 'installed' }
 service { 'logstash': ensure => 'running' }
 package { 'filebeat': ensure => 'installed' }
-service { 'filebeat': ensure => 'running' }
+if $filebeat == '1' { service { 'filebeat': ensure => 'running' } }
 
 file { '/etc/logstash/conf.d/02-beats-input.conf': 
          content => 'input { beats { port => 5044 } }' }
