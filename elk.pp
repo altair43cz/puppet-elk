@@ -7,11 +7,37 @@ package { 'kibana': ensure => 'installed' }
 service { 'kibana': ensure => 'running' }
 package { 'logstash': ensure => 'installed' }
 service { 'logstash': ensure => 'running' }
+package { 'mongodb-org': ensure => 'installed' }
 package { 'filebeat': ensure => 'installed' }
-if $filebeat == '1' { service { 'filebeat': ensure => 'running' } }
+if $filebeat == '1' {
+    service { 'mongod': ensure => 'running' } 
+    service { 'filebeat': ensure => 'running' } 
+}
 
 file { '/etc/logstash/conf.d/02-beats-input.conf': 
-         content => 'input { beats { port => 5044 } }' }
+         content => 'input { beats { port => 5044 } }' 
+}
+
+file {'/etc/logstash/conf.d/20-elasticsearch-syslog.conf':
+        content => 'filter {
+          mutate {
+            add_field => {
+                "[event][kind]" => "event"
+                "[event][category]" => "host"
+                "[event][type]" => ["info"]
+                "[event][dataset]" => "system.syslog"
+            }
+          }
+        }'
+}
+
+file {'/etc/logstash/conf.d/25-elasticsearch-error.conf':
+        content => 'filter {
+           if "error" in [message] {
+               mutate { add_tag => "error_tag" }
+           }
+       }'
+}
 
 file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
          content => 'output {
@@ -29,7 +55,8 @@ file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
             index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
             }
           }
-        }' }
+        }' 
+}
 
 file_line { 'enable logs input':
          path   => '/etc/filebeat/filebeat.yml',
