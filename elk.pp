@@ -12,15 +12,20 @@ package { 'filebeat': ensure => 'installed' }
 if $filebeat == '1' {
     service { 'mongod': ensure => 'running', require => Package['mongodb-org'] } 
     service { 'filebeat': ensure => 'running', require => Package['filebeat'] } 
+} else {
+    service { 'mongod': require => Package['mongodb-org'] } 
+    service { 'filebeat': require => Package['filebeat'] } 
 }
 
 file { '/etc/logstash/conf.d/02-beats-input.conf': 
     require => Package['logstash'],
+    notify  => Service['logstash'],
     content => 'input { beats { port => 5044 } }'
 }
 
 file {'/etc/logstash/conf.d/20-elasticsearch-syslog.conf':
     require => Package['logstash'],
+    notify  => Service['logstash'],
     content => 'filter {
         mutate {
             add_field => {
@@ -35,6 +40,7 @@ file {'/etc/logstash/conf.d/20-elasticsearch-syslog.conf':
 
 file {'/etc/logstash/conf.d/25-elasticsearch-error.conf':
     require => Package['logstash'],
+    notify  => Service['logstash'],
     content => 'filter {
            if "error" in [message] {
                mutate { add_tag => "error_tag" }
@@ -44,6 +50,7 @@ file {'/etc/logstash/conf.d/25-elasticsearch-error.conf':
 
 file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
     require => Package['logstash'],
+    notify  => Service['logstash'],
     content => 'output {
           if [@metadata][pipeline] {
             elasticsearch {
@@ -64,6 +71,7 @@ file { '/etc/logstash/conf.d/30-elasticsearch-output.conf':
 
 file_line { 'enable logs input':
     require => Package['filebeat'],
+    notify  => Service['filebeat'],
     path => '/etc/filebeat/filebeat.yml',
     ensure => 'present',
     match => '^  enabled: false',
@@ -72,6 +80,7 @@ file_line { 'enable logs input':
 
 file_line { 'disable elasticsearch output':
     require => Package['filebeat'],
+    notify  => Service['filebeat'],
     path => '/etc/filebeat/filebeat.yml',
     ensure => 'present',
     match => 'output.elasticsearch:',
@@ -79,6 +88,7 @@ file_line { 'disable elasticsearch output':
 }
 file_line { 'disable elasticsearch out-port':
     require => Package['filebeat'],
+    notify  => Service['filebeat'],
     path => '/etc/filebeat/filebeat.yml',
     ensure => 'present',
     match => 'hosts: \["localhost:9200"\]',
@@ -87,6 +97,7 @@ file_line { 'disable elasticsearch out-port':
 
 file_line { 'enable logstash output':
     require => Package['filebeat'],
+    notify  => Service['filebeat'],
     path => '/etc/filebeat/filebeat.yml',
     ensure => 'present',
     match => '#output.logstash:',
@@ -95,6 +106,7 @@ file_line { 'enable logstash output':
 
 file_line { 'enable logstash out-port':
     require => Package['filebeat'],
+    notify  => Service['filebeat'],
     path => '/etc/filebeat/filebeat.yml',
     ensure => 'present',
     match => '#hosts: \["localhost:5044"\]',
@@ -103,6 +115,7 @@ file_line { 'enable logstash out-port':
 
 file_line { 'append ilm policy':
     require => Package['filebeat'],
+    notify  => Service['filebeat'],
     path => '/etc/filebeat/filebeat.yml',
     ensure => 'present',
     line => 'setup.ilm.overwrite: true'
